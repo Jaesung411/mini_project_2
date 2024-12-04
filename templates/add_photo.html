@@ -1,0 +1,26 @@
+<div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addImageModalLabel">이미지 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/add_image" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="imageTitle" class="form-label">이미지 제목</label>
+                        <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="imageFile" class="form-label">이미지 파일</label>
+                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
