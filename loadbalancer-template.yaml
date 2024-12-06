@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  MyLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: 'MyWebAppELB'
+      Scheme: internet-facing
+      Subnets:
+        - !ImportValue MyPublicSubnet1Id
+        - !ImportValue MyPublicSubnet2Id
+      SecurityGroups:
+        - !ImportValue MySecurityGroupId
+      Tags:
+        - Key: 'Name'
+          Value: 'MyWebAppLoadBalancer'
+
+  MyTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: 'MyWebAppTargetGroup'
+      Protocol: HTTP
+      Port: 80
+      VpcId: !ImportValue MyVPCId
+      HealthCheckPath: '/'
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      TargetType: instance
+      Tags:
+        - Key: 'Name'
+          Value: 'MyWebAppTargetGroup'
+
+  MyLoadBalancerListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      LoadBalancerArn: !Ref MyLoadBalancer
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref MyTargetGroup
+
+Outputs:
+  MyTargetGroupArn:
+    Value: !Ref MyTargetGroup
+    Export:
+      Name: MyTargetGroupArn
