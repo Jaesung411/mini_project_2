@@ -10,7 +10,15 @@
 <body>
     
     {% include 'navigator.html' %}
-
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                    <script>		
+                        alert('{{message}}')
+                    </script>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <div class="container my-4">
         <div class="row g-4">
             <!-- 사진 카드 -->
