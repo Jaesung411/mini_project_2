@@ -3,12 +3,11 @@ import pymysql
 class UserDBConnect:
     @classmethod
     def get_db(self):
-        
         return pymysql.connect(
             host='database-1.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
             user='admin',
             passwd='qwer1234',
-            db='login',
+            db='mini2',
             charset='utf8',
             autocommit=True
         )
