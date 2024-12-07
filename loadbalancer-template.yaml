@@ -20,9 +20,10 @@ Resources:
     Properties:
       Name: 'MyWebAppTargetGroup'
       Protocol: HTTP
-      Port: 80
+      Port: 8080
       VpcId: !ImportValue MyVPCId
-      HealthCheckPath: '/'
+      HealthCheckPort: '8080' 
+      HealthCheckPath: '/health'
       HealthCheckIntervalSeconds: 10
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
