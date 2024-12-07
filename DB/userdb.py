@@ -32,6 +32,7 @@ class userDAO :
             sql = 'SELECT * FROM login WHERE email=%s'
             cursor.execute(sql,(useremail))
             user = cursor.fetchone()
+            print(user)
             if user == None:
                 return None
             else:
