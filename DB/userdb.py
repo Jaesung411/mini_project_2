@@ -5,7 +5,7 @@ class UserDBConnect:
     def get_db(self):
         
         return pymysql.connect(
-            host='database-2.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
+            host='database-1.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
             user='admin',
             passwd='qwer1234',
             db='test',
