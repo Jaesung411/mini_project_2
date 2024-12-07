@@ -8,7 +8,7 @@ class UserDBConnect:
             host='database-1.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
             user='admin',
             passwd='qwer1234',
-            db='test',
+            db='login',
             charset='utf8',
             autocommit=True
         )
