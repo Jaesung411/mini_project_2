@@ -5,10 +5,10 @@ class UserDBConnect:
     def get_db(self):
         
         return pymysql.connect(
-            host='database-2.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
+            host='database-1.cbwk5avem9qx.ap-northeast-3.rds.amazonaws.com',
             user='admin',
             passwd='qwer1234',
-            db='test',
+            db='login',
             charset='utf8',
             autocommit=True
         )
@@ -32,7 +32,7 @@ class userDAO :
             sql = 'SELECT * FROM login WHERE email=%s'
             cursor.execute(sql,(useremail))
             user = cursor.fetchone()
-            print(user)
+ 
             if user == None:
                 return None
             else:
