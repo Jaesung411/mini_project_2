@@ -9,6 +9,7 @@ Resources:
       Subnets:
         - !ImportValue MyPublicSubnet1Id
         - !ImportValue MyPublicSubnet2Id
+        - !ImportValue MyPublicSubnet3Id
       SecurityGroups:
         - !ImportValue MySecurityGroupId
       Tags:

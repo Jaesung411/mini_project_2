@@ -19,6 +19,10 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0  # MySQL 트래픽 허용
         - IpProtocol: icmp
           FromPort: -1  # ICMP는 포트를 사용하지 않음
           ToPort: -1    # -1은 ICMP 전체를 의미

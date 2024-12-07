@@ -50,12 +50,13 @@ Resources:
       VPCZoneIdentifier:
         - !ImportValue MyPublicSubnet1Id
         - !ImportValue MyPublicSubnet2Id
+        - !ImportValue MyPublicSubnet3Id
       LaunchTemplate:
         LaunchTemplateId: !Ref MyLaunchTemplate
         Version: !GetAtt MyLaunchTemplate.LatestVersionNumber
       MinSize: '1'
       MaxSize: '5'
-      DesiredCapacity: '2'
+      DesiredCapacity: '3'
       TargetGroupARNs: 
         - !ImportValue MyTargetGroupArn  # 대상 그룹의 ARN 참조
       Tags:

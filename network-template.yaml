@@ -30,12 +30,23 @@ Resources:
       Tags:
         - Key: 'Name'
           Value: 'MyWebAppPublicSubnet2'
+
+  PublicSubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.3.0/24'
+      AvailabilityZone: !Select [2, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: 'Name'
+          Value: 'MyWebAppPublicSubnet3'
   
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: '10.0.3.0/24' # 프라이빗 서브넷의 IP 범위
+      CidrBlock: '10.0.4.0/24' # 프라이빗 서브넷의 IP 범위
       AvailabilityZone: !Select [0, !GetAZs '']
       MapPublicIpOnLaunch: false # 퍼블릭 IP를 자동 할당하지 않음
       Tags:
@@ -46,12 +57,23 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: '10.0.4.0/24' # 프라이빗 서브넷의 IP 범위
+      CidrBlock: '10.0.5.0/24' # 프라이빗 서브넷의 IP 범위
       AvailabilityZone: !Select [1, !GetAZs '']
       MapPublicIpOnLaunch: false # 퍼블릭 IP를 자동 할당하지 않음
       Tags:
         - Key: 'Name'
           Value: 'MyWebAppPrivateSubnet2'
+  
+  PrivateSubnet3:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.6.0/24' # 프라이빗 서브넷의 IP 범위
+      AvailabilityZone: !Select [2, !GetAZs '']
+      MapPublicIpOnLaunch: false # 퍼블릭 IP를 자동 할당하지 않음
+      Tags:
+        - Key: 'Name'
+          Value: 'MyWebAppPrivateSubnet3'
 
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
@@ -92,6 +114,12 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref RouteTable
+  
+  PublicSubnet3RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet3
+      RouteTableId: !Ref RouteTable
 
 Outputs:
   VPCId:
@@ -108,6 +136,11 @@ Outputs:
     Value: !Ref PublicSubnet2
     Export:
       Name: MyPublicSubnet2Id
+  
+  PublicSubnet3Id:
+    Value: !Ref PublicSubnet3
+    Export:
+      Name: MyPublicSubnet3Id
 
   PrivateSubnet1Id:
     Value: !Ref PrivateSubnet1
@@ -118,3 +151,8 @@ Outputs:
     Value: !Ref PrivateSubnet2
     Export:
       Name: MyPrivateSubnet2Id
+  
+  PrivateSubnet3Id:
+    Value: !Ref PrivateSubnet3
+    Export:
+      Name: MyPrivateSubnet3Id
