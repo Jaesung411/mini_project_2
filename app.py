@@ -2,6 +2,7 @@ from flask import *
 from admin_user import admin_user_bp
 from gallery import gallery_bp
 from photo_detail import photo_detail_bp
+from upload import upload_bp
 
 app = Flask(__name__)
 app.secret_key='1234'
@@ -9,6 +10,7 @@ app.secret_key='1234'
 app.register_blueprint(admin_user_bp)
 app.register_blueprint(gallery_bp)
 app.register_blueprint(photo_detail_bp)
+app.register_blueprint(upload_bp, url_prefix='/upload')
 
 @app.route('/')
 def welcome():
