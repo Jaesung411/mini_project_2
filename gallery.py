@@ -1,17 +1,31 @@
 from flask import *
 import os
+import boto3
+from datetime import datetime
+from DB.imagedb import *
 
 gallery_bp = Blueprint('gallery', __name__)
 
 # 샘플 사진 데이터
 photos = [{"id": i, "title": f"사진 {i}", "description": "이 사진은 샘플 사진입니다."} for i in range(100)]
+s3 = boto3.client('s3')
+S3_BUCKET = 'mywebimagevideo'
+S3_REGION = "ap-northeast-3"
 
 @gallery_bp.route('/home', methods=['GET','POST'])
 def gallery_list():
     if request.method == "POST":
-        print("!!!!")
         return redirect(url_for('gallery.gallery_list'))
     else:
+        # DB에서 사용자의 사진 가져오기
+        images = imageDAO().get_files_by_userid(session['userInfo']['userId'])
+        
+        # photos 리스트 초기화
+        photos = []
+        for image in images:
+            element = {"id": image['file_id'], "title": image['file_name'], "image_path": image['image_path'], "video_path": image['video_path']}
+            photos.append(element)
+       
         # 현재 페이지 번호 가져오기 (기본값은 1)
         page = int(request.args.get('page', 1))
         per_page = 6  # 한 페이지에 보여줄 사진 개수
@@ -81,17 +95,46 @@ def get_pagination(page, total_pages, max_visible=10):
 
     return visible_pages
 
-@gallery_bp.route('/add_image', methods=['POST'])
+@gallery_bp.route('/add_image', methods=['GET','POST'])
 def add_image():
     # 폼 데이터와 파일 가져오기
     title = request.form['title']
-    file = request.files['image']
-    
-    if file and file.filename != '':
-        # 파일 저장
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-        # 여기에서 저장된 이미지를 데이터베이스나 리스트에 추가 가능
-        return redirect(url_for('home'))
-    return "이미지 업로드 실패", 400
+    image = request.files['image']
+    video = request.files['video']
+    current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # HTML 폼에서 파일 가져오기
+    # if 'file' not in request.files:
+    #     return "No file uploaded", 400
+
+    # file = request.files['file']
+    # if file.filename == '':
+    #     return "No selected file", 400
+
+    # S3로 파일 업로드
+    try:
+        # S3에 이미지 업로드
+        s3.upload_fileobj(
+            image,
+            S3_BUCKET,
+            f"images/{str(session['userInfo']['userId'])}/{current_datetime}_{image.filename}",  # S3 내 경로
+            # ExtraArgs={'ACL': 'public-read'}
+        )
+
+        # S3에 동영상 업로드
+        s3.upload_fileobj(
+            video,
+            S3_BUCKET,
+            f"videos/{str(session['userInfo']['userId'])}/{current_datetime}_{video.filename}",  # S3 내 경로
+            # ExtraArgs={'ACL': 'public-read'}
+        )
+
+        image_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/images/{str(session['userInfo']['userId'])}/{current_datetime}_{image.filename}"
+        video_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/videos/{str(session['userInfo']['userId'])}/{current_datetime}_{video.filename}"
+        imageDAO().insert_file(session['userInfo']['userId'], title, current_datetime, current_datetime, image_url, video_url)
+        flash("업로드 성공")
+        return redirect(url_for('gallery.gallery_list'))
+    except Exception as e:
+        print(e)
+        flash("업로드 실패")
+        return redirect(url_for('gallery.gallery_list'))
 

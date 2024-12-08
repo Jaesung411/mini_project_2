@@ -12,7 +12,7 @@ def login():
         passwd = request.form['password']
         #이메일에 해당하는 회원 정보
         user_info = userdb.userDAO().authenicate(email)
-        
+
         if user_info == None or not check_password_hash(user_info[3], passwd):
             # user_logger.info("로그인 실패")
             flash("로그인 실패했습니다.")

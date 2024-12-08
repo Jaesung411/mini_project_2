@@ -24,13 +24,12 @@
             <!-- 사진 카드 -->
             {% for photo in photos %}
             <div class="col-12 col-sm-6 col-md-4">
-                <a href="{{ url_for('photo_detail.detail', photo_id=photo['id']) }}" class="text-decoration-none">
+                <a href="{{ url_for('photo_detail.detail', photo_id=photo['id'], title=photo['title'],image_url=photo['image_path'], video_url=photo['video_path'] )}}" class="text-decoration-none">
                     <div class="card">
-                        <img src="https://via.placeholder.com/300x200" class="card-img-top img-fluid" alt="사진 {{ photo['id'] }}">
+                        <img src="{{ photo['image_path'] }}" class="card-img-top img-fluid" alt="사진 {{ photo['id'] }}">
                         <div class="card-body">
-                            <h5 class="card-title">사진 {{ photo['id'] }}</h5>
-                            <p class="card-text">제목: {{ photo['title'] }}</p>
-                            <p class="card-text">설명: {{ photo['description'] }}</p>
+                            <h5 class="card-title">제목: {{ photo['title'] }}</h5>
+                            <!-- <p class="card-text">설명: {{ photo['description'] }}</p> -->
                         </div>
                     </div>
                 </a>
