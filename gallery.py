@@ -103,6 +103,20 @@ def gallery_list():
 def search():
     query = request.args.get('query', '')
 
+    # DB에서 사용자 사진 가져오기 (gallery_list와 같은 로직)
+    images = imageDAO().get_files_by_userid(session['userInfo']['userId'])
+
+    # DB 데이터를 photos 형태로 변환
+    photos = []
+    for image in images:
+        photos.append({
+            "id": image['file_id'],
+            "title": image['file_name'],
+            "image_path": image['image_path'],
+            "video_path": image['video_path']
+        })
+
+    # 검색어가 있는 경우에만 필터링 수행
     if query:
         images = imageDAO().search_images_by_query(session['userInfo']['userId'], query)
     else:
