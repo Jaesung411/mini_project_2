@@ -1,30 +1,72 @@
-<div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addImageModalLabel">이미지 추가</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="/add_image" method="POST" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="imageTitle" class="form-label">이미지 제목</label>
-                        <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="imageFile" class="form-label">이미지 파일</label>
-                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="videoFile" class="form-label">동영상 파일</label>
-                        <input type="file" class="form-control" id="videoFile" name="video" accept="video/*" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="submit" class="btn btn-primary">추가</button>
-                </div>
-            </form>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>QR 추가</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>QR 추가</h2>
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/extract_url">
+        <div class="form-group">
+            <label for="imageTitle">제목</label>
+            <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
         </div>
-    </div>
+        <div class="form-group">
+            <label for="imageFile">QR 이미지 파일</label>
+            <input type="file" class="form-control" id="imageFile" name="image" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-primary">추가</button>
+        <p id="message" class="text-center text-success"></p>
+        <p id="status" class="text-center text-danger"></p>
+    </form>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("uploadForm");
+    const statusMessage = document.getElementById("status");
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        statusMessage.textContent = "Uploading...";
+
+        const formData = new FormData(form);
+        fetch("/extract_url", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.textContent = "URL extracted successfully: " + data.url;
+                fetch("/download_upload", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: data.url })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message.includes("완료")) {
+                        statusMessage.textContent = "File downloaded and uploaded to S3 successfully!";
+                    } else {
+                        statusMessage.textContent = "File download/upload failed! " + data.message;
+                    }
+                })
+                .catch(error => {
+                    statusMessage.textContent = "File download/upload failed with error: " + error;
+                });
+            } else {
+                statusMessage.textContent = "URL extraction failed!";
+            }
+        })
+        .catch(error => {
+            statusMessage.textContent = "An error occurred: " + error;
+        });
+    });
+});
+</script>
+</body>
+</html>
