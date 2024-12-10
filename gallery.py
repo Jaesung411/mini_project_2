@@ -108,11 +108,21 @@ def search():
     else:
         images = imageDAO().get_files_by_userid(session['userInfo']['userId'])
 
+    # 여기서 images를 photos 형태로 변환
+    photos = []
+    for image in images:
+        photos.append({
+            "id": image['file_id'],
+            "title": image['file_name'],
+            "image_path": image['image_path'],
+            "video_path": image['video_path']
+        })
+
     # 페이지네이션
     page = request.args.get('page', 1, type=int)
     per_page = 6
-    total_pages = (len(images) - 1) // per_page + 1
-    paginated_list = images[(page - 1) * per_page: page * per_page]
+    total_pages = (len(photos) - 1) // per_page + 1
+    paginated_list = photos[(page - 1) * per_page: page * per_page]
     pages = get_pagination(page, total_pages)
 
     return render_template('gallery.html', 
