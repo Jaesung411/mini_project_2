@@ -102,6 +102,32 @@ class imageDAO:
         }
         return None  # 파일이 없으면 None 반환
     
+    def search_images_by_query(self, user_id, query):
+        ret = []
+        db = DBConnect.get_db()
+        cursor = db.cursor()
+        # query를 file_name에 포함하는 파일 검색
+        sql_select = "SELECT * FROM files WHERE userid=%s AND file_name LIKE %s"
+        try:
+            cursor.execute(sql_select, (user_id, f"%{query}%"))
+            rows = cursor.fetchall()
+            for row in rows:
+                temp = {
+                    'file_id': row[0],
+                    'userid': row[1],
+                    'file_name': row[2],
+                    'qr_info': row[3],
+                    'update_at': row[4],
+                    'image_path': row[5],
+                    'video_path': row[6]
+                }
+                ret.append(temp)
+        except Exception as e:
+            print("search_images_by_query Error:", e)
+        finally:
+            db.close()
+        return ret
+    
     # insert
     def insert_file(self, userid, title, qr_info, upload_at, image_path, video_path):
         cursor = DBConnect.get_db().cursor()

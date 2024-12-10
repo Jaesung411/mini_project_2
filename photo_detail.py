@@ -16,7 +16,9 @@ def detail(photo_id):
     update_at = photo.get('update_at')
     if update_at:
         try:
-            date_taken = datetime.strptime(update_at, '%Y-%m-%d %H:%M:%S').strftime('%Y년 %m월 %d일')  # 포맷된 날짜
+            # 저장된 문자열을 datetime 객체로 변환 (예: "20241210_000000" → 2024-12-10)
+            parsed_date = datetime.strptime(update_at, '%Y%m%d_%H%M%S')
+            date_taken = parsed_date.strftime('%Y년 %m월 %d일')  # 원하는 형식으로 변환
         except ValueError:
             date_taken = "날짜 형식 오류"
     else:
@@ -29,5 +31,5 @@ def detail(photo_id):
         photo_id=photo['file_id'],
         image_url=photo['image_path'],
         video_url=photo['video_path'],
-        date_taken=date_taken  # 촬영 날짜 추가
+        date_taken=date_taken  # 포맷된 날짜 추가
     )

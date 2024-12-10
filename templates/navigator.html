@@ -23,8 +23,8 @@
                 </li>
                 <!-- 검색 기능 추가 -->
                 <li class="nav-item">
-                    <form class="d-flex" action="{{ url_for('gallery.search') }}" method="get">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <form class="d-flex" action="{{ url_for('gallery.search') }}" method="get" onsubmit="return checkSearchQuery();">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query" id="searchQuery">
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
                 </li>
@@ -34,3 +34,26 @@
 </nav>
 
 {% include 'add_photo.html' %}
+
+<script>
+function checkSearchQuery() {
+    const query = document.getElementById('searchQuery').value.trim();
+    if (!query) {
+        alert("검색어를 입력하세요");
+        return false; // 폼 제출 취소
+    }
+    return true; // 폼 제출 진행
+}
+</script>
+
+
+<script>
+function checkSearchQuery() {
+    const query = document.getElementById('searchQuery').value.trim();
+    if (!query) {
+        alert("검색어를 입력하세요");
+        return false;
+    }
+    return true;
+}
+</script>
