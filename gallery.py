@@ -66,7 +66,7 @@ def gallery_list():
         photos = []
         for image in images:
             element = {"id": image['file_id'], "title": image['file_name'], "image_path": image['image_path'], "video_path": image['video_path']}
-            photos.gallery_bpend(element)
+            photos.append(element)
        
         # 현재 페이지 번호 가져오기 (기본값은 1)
         page = int(request.args.get('page', 1))
@@ -115,49 +115,72 @@ def search():
 #     # 이 부분은 실제 구현에 맞게 수정 필요
 #     return images
 
-def upload_to_s3(file_path, s3_key, image_name=None, video_name=None, title=None, current_datetime=None):
+def upload_to_s3(file_path, s3_key, title=None):
     try:
         s3.upload_file(file_path, S3_BUCKET, s3_key)
-        gallery_bp.logger.info(f"Uploaded {file_path} to S3 as {s3_key}")
+        current_app.logger.info(f"Uploaded {file_path} to S3 as {s3_key}")
 
         # S3 업로드 완료 후 로컬 파일 삭제
         os.remove(file_path)
-        gallery_bp.logger.info(f"Deleted local file: {file_path}")
+        current_app.logger.info(f"Deleted local file: {file_path}")
 
         file_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{s3_key}"
 
         # RDS에 파일 정보 저장
-        if image_name and video_name:
-            image_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/images/{str(session['userInfo']['userId'])}/{current_datetime}_{image_name}"
-            video_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/videos/{str(session['userInfo']['userId'])}/{current_datetime}_{video_name}"
-            imageDAO().insert_file(session['userInfo']['userId'], title, current_datetime, current_datetime, image_url, video_url)
+        current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+        user_id = str(session['userInfo']['userId'])
+        
+        if "images" in s3_key:
+            image_url = file_url
+            video_url = None
+            imageDAO().insert_file(user_id, title, current_datetime, current_datetime, image_url, video_url)
+        elif "videos" in s3_key:
+            video_url = file_url
+            image_url = None
+            imageDAO().insert_file(user_id, title, current_datetime, current_datetime, image_url, video_url)
 
         return file_url
     except Exception as e:
-        gallery_bp.logger.error(f"Failed to upload {file_path} to S3: {e}")
+        current_app.logger.error(f"Failed to upload {file_path} to S3: {e}")
         return None
+
+
+
 
 @gallery_bp.route("/extract_url", methods=["POST"])
 def extract_url_from_qr():
-    image_file = request.files.get("image")
-    if image_file:
-        file_bytes = np.frombuffer(image_file.read(), np.uint8)
-        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    try:
+        image_file = request.files.get("image")
+        title = request.form['title']
+        if image_file:
+            file_bytes = np.frombuffer(image_file.read(), np.uint8)
+            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-        url = extract_url(image)
-        if url:
-            return jsonify({"success": True, "url": url})
-        else:
-            return jsonify({"success": False, "message": "QR 코드에서 URL을 추출할 수 없습니다."})
+            url = extract_url(image)
+            if url:
+                return jsonify({"success": True, "url": url, "title": title})
+            else:
+                return jsonify({"success": False, "message": "QR 코드에서 URL을 추출할 수 없습니다."})
+        return jsonify({"success": False, "message": "이미지가 업로드되지 않았습니다."})
+    except Exception as e:
+        current_app.logger.error(f"Error during extract URL: {e}")
+        return jsonify({"success": False, "message": "서버 오류 발생"})
 
-    return jsonify({"success": False, "message": "이미지가 업로드되지 않았습니다."})
+
+
 
 @gallery_bp.route("/download_upload", methods=["POST"])
 def download_upload():
-    data = request.get_json()
-    url = data.get("url")
-    result = download_from_url(url)
-    return jsonify({"message": result})
+    try:
+        data = request.get_json()
+        url = data.get("url")
+        title = data.get("title")
+        result = download_from_url(url, title)
+        return jsonify({"message": result})
+    except Exception as e:
+        current_app.logger.error(f"Error during download upload: {e}")
+        return jsonify({"message": "서버 오류 발생"})
+
 
 # 요소 존재 여부 확인 및 클릭
 def click_element_by_text(driver, tag, text):
@@ -166,14 +189,13 @@ def click_element_by_text(driver, tag, text):
         element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, xpath)))
         driver.execute_script("arguments[0].scrollIntoView(true);", element)
         element.click()
-        gallery_bp.logger.info(f"Clicked on element with text: {text}")
+        current_app.logger.info(f"Clicked on element with text: {text}")
         return True
     except Exception as e:
-        gallery_bp.logger.error(f"Failed to click on element with text: {text}, {e}")
+        current_app.logger.error(f"Failed to click on element with text: {text}, {e}")
         return False
 
-# QR 코드에서 URL을 통해 이미지와 비디오 다운로드
-def download_from_url(url):
+def download_from_url(url, title):
     driver = None
     try:
         driver = setup_driver()
@@ -196,13 +218,13 @@ def download_from_url(url):
             new_image_name = f"{user_id}_image_{current_datetime}.jpg"
             image_path = rename_downloaded_file(download_dir, "image.jpg", new_image_name)
             if image_path:
-                gallery_bp.logger.info(f"Image downloaded and renamed to {image_path}")
+                current_app.logger.info(f"Image downloaded and renamed to {image_path}")
                 image_s3_key = f"images/{user_id}/{new_image_name}"
-                image_s3_url = upload_to_s3(image_path, image_s3_key)
+                image_s3_url = upload_to_s3(image_path, image_s3_key, title)
                 if image_s3_url is None:
                     return "Failed to upload image to S3."
             else:
-                gallery_bp.logger.error("Failed to rename downloaded image.")
+                current_app.logger.error("Failed to rename downloaded image.")
                 return "Failed to rename image."
 
         # 동영상 다운로드 및 파일명 변경
@@ -211,13 +233,13 @@ def download_from_url(url):
             new_video_name = f"{user_id}_video_{current_datetime}.mp4"
             video_path = rename_downloaded_file(download_dir, "video.mp4", new_video_name)
             if video_path:
-                gallery_bp.logger.info(f"Video downloaded and renamed to {video_path}")
+                current_app.logger.info(f"Video downloaded and renamed to {video_path}")
                 video_s3_key = f"videos/{user_id}/{new_video_name}"
-                video_s3_url = upload_to_s3(video_path, video_s3_key)
+                video_s3_url = upload_to_s3(video_path, video_s3_key, title)
                 if video_s3_url is None:
                     return "Failed to upload video to S3."
             else:
-                gallery_bp.logger.error("Failed to rename downloaded video.")
+                current_app.logger.error("Failed to rename downloaded video.")
                 return "Failed to rename video."
 
         if not image_s3_url and not video_s3_url:
@@ -225,11 +247,12 @@ def download_from_url(url):
 
         return f"이미지 및 비디오 다운로드 및 S3 업로드가 완료되었습니다. 이미지 URL: {image_s3_url}, 비디오 URL: {video_s3_url}"
     except Exception as e:
-        gallery_bp.logger.error(f"Error during download: {e}")
+        current_app.logger.error(f"Error during download: {e}")
         return f"오류 발생: {e}"
     finally:
         if driver:
             driver.quit()
+
     
 def get_pagination(page, total_pages, max_visible=10):
     """
@@ -295,4 +318,3 @@ def get_pagination(page, total_pages, max_visible=10):
 #         print(e)
 #         flash("업로드 실패")
 #         return redirect(url_for('gallery.gallery_list'))
-

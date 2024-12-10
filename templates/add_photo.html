@@ -1,120 +1,120 @@
 <div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addImageModalLabel">이미지 추가</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/extract_url">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="imageTitle" class="form-label">제목</label>
-                            <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="uploadOption" class="form-label">파일 업로드 방식 선택</label>
-                            <select class="form-control" id="uploadOption" required>
-                                <option value="">선택하세요</option>
-                                <option value="file">파일에서 업로드</option>
-                                <option value="camera">카메라로 업로드</option>
-                            </select>
-                        </div>
-                        <div class="mb-3" id="fileUpload" style="display: none;">
-                            <label for="imageFile" class="form-label">QR 이미지 파일</label>
-                            <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
-                        </div>
-                        <div class="mb-3" id="cameraUpload" style="display: none;">
-                            <label for="cameraFile" class="form-label">QR 이미지 파일</label>
-                            <input type="file" class="form-control" id="cameraFile" accept="image/*" capture="camera">
-                        </div>
-                        <p id="message" class="text-center text-success"></p>
-                        <p id="status" class="text-center text-danger"></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                        <button type="submit" class="btn btn-primary">추가</button>
-                    </div>
-                </form>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addImageModalLabel">이미지 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/extract_url">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="imageTitle" class="form-label">제목</label>
+                        <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uploadOption" class="form-label">파일 업로드 방식 선택</label>
+                        <select class="form-control" id="uploadOption" required>
+                            <option value="">선택하세요</option>
+                            <option value="file">파일에서 업로드</option>
+                            <option value="camera">카메라로 업로드</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="fileUpload" style="display: none;">
+                        <label for="imageFile" class="form-label">QR 이미지 파일</label>
+                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3" id="cameraUpload" style="display: none;">
+                        <label for="cameraFile" class="form-label">QR 이미지 파일</label>
+                        <input type="file" class="form-control" id="cameraFile" accept="image/*" capture="camera">
+                    </div>
+                    <p id="message" class="text-center text-success"></p>
+                    <p id="status" class="text-center text-danger"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("uploadForm");
-    const uploadOption = document.getElementById("uploadOption");
-    const fileUpload = document.getElementById("fileUpload");
-    const cameraUpload = document.getElementById("cameraUpload");
-    const cameraFile = document.getElementById("cameraFile");
-    const statusMessage = document.getElementById("status");
+const form = document.getElementById("uploadForm");
+const uploadOption = document.getElementById("uploadOption");
+const fileUpload = document.getElementById("fileUpload");
+const cameraUpload = document.getElementById("cameraUpload");
+const cameraFile = document.getElementById("cameraFile");
+const statusMessage = document.getElementById("status");
 
-    uploadOption.addEventListener("change", function() {
-        const selectedOption = this.value;
-        if (selectedOption === "file") {
-            fileUpload.style.display = "block";
-            cameraUpload.style.display = "none";
-        } else if (selectedOption === "camera") {
-            fileUpload.style.display = "none";
-            cameraUpload.style.display = "block";
-            cameraFile.click(); // 카메라를 자동으로 켜기
-        } else {
-            fileUpload.style.display = "none";
-            cameraUpload.style.display = "none";
-        }
-    });
-
-    cameraFile.addEventListener("change", function() {
-        if (cameraFile.files.length > 0) {
-            const formData = new FormData(form);
-            formData.append("image", cameraFile.files[0]);
-            statusMessage.textContent = "Uploading...";
-            sendFormData(formData);
-        }
-    });
-
-    form.addEventListener("submit", function(event) {
-        event.preventDefault();
-        statusMessage.textContent = "Uploading...";
-
-        const formData = new FormData(form);
-        sendFormData(formData);
-    });
-
-    function sendFormData(formData) {
-        fetch("/extract_url", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusMessage.textContent = "URL extracted successfully: " + data.url;
-                fetch("/download_upload", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ url: data.url })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message.includes("완료")) {
-                        statusMessage.textContent = "File downloaded and uploaded to S3 successfully!";
-                    } else {
-                        statusMessage.textContent = "File download/upload failed! " + data.message;
-                    }
-                })
-                .catch(error => {
-                    statusMessage.textContent = "File download/upload failed with error: " + error;
-                });
-            } else {
-                statusMessage.textContent = "URL extraction failed!";
-            }
-        })
-        .catch(error => {
-            statusMessage.textContent = "An error occurred: " + error;
-        });
+uploadOption.addEventListener("change", function() {
+    const selectedOption = this.value;
+    if (selectedOption === "file") {
+        fileUpload.style.display = "block";
+        cameraUpload.style.display = "none";
+    } else if (selectedOption === "camera") {
+        fileUpload.style.display = "none";
+        cameraUpload.style.display = "block";
+        cameraFile.click(); // 카메라를 자동으로 켜기
+    } else {
+        fileUpload.style.display = "none";
+        cameraUpload.style.display = "none";
     }
+});
+
+cameraFile.addEventListener("change", function() {
+    if (cameraFile.files.length > 0) {
+        const formData = new FormData(form);
+        formData.append("image", cameraFile.files[0]);
+        statusMessage.textContent = "Uploading...";
+        sendFormData(formData);
+    }
+});
+
+form.addEventListener("submit", function(event) {
+    event.preventDefault();
+    statusMessage.textContent = "Uploading...";
+
+    const formData = new FormData(form);
+    sendFormData(formData);
+});
+
+function sendFormData(formData) {
+    fetch("/extract_url", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusMessage.textContent = "URL extracted successfully: " + data.url;
+            fetch("/download_upload", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: data.url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message.includes("완료")) {
+                    statusMessage.textContent = "File downloaded and uploaded to S3 successfully!";
+                } else {
+                    statusMessage.textContent = "File download/upload failed! " + data.message;
+                }
+            })
+            .catch(error => {
+                statusMessage.textContent = "File download/upload failed with error: " + error;
+            });
+        } else {
+            statusMessage.textContent = "URL extraction failed!";
+        }
+    })
+    .catch(error => {
+        statusMessage.textContent = "An error occurred: " + error;
+    });
+}
 });
 </script>
 </body>
