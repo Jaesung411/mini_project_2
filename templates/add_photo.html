@@ -14,24 +14,68 @@
             <input type="text" class="form-control" id="imageTitle" name="title" placeholder="이미지 제목을 입력하세요" required>
         </div>
         <div class="form-group">
+            <label for="uploadOption">파일 업로드 방식 선택</label>
+            <select class="form-control" id="uploadOption" required>
+                <option value="">선택하세요</option>
+                <option value="file">파일에서 업로드</option>
+                <option value="camera">카메라로 업로드(모바일지원)</option>
+            </select>
+        </div>
+        <div class="form-group" id="fileUpload" style="display: none;">
             <label for="imageFile">QR 이미지 파일</label>
-            <input type="file" class="form-control" id="imageFile" name="image" accept="image/*" required>
+            <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
+        </div>
+        <div class="form-group" id="cameraUpload" style="display: none;">
+            <label for="cameraFile">QR 이미지 파일</label>
+            <input type="file" class="form-control" id="cameraFile" accept="image/*" capture="camera">
         </div>
         <button type="submit" class="btn btn-primary">추가</button>
-        <p id="message" class="text-center text-success"></p>
-        <p id="status" class="text-center text-danger"></p>
     </form>
+    <p id="message" class="text-center text-success"></p>
+    <p id="status" class="text-center text-danger"></p>
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("uploadForm");
+    const uploadOption = document.getElementById("uploadOption");
+    const fileUpload = document.getElementById("fileUpload");
+    const cameraUpload = document.getElementById("cameraUpload");
+    const cameraFile = document.getElementById("cameraFile");
     const statusMessage = document.getElementById("status");
+
+    uploadOption.addEventListener("change", function() {
+        const selectedOption = this.value;
+        if (selectedOption === "file") {
+            fileUpload.style.display = "block";
+            cameraUpload.style.display = "none";
+        } else if (selectedOption === "camera") {
+            fileUpload.style.display = "none";
+            cameraUpload.style.display = "block";
+            cameraFile.click(); // 카메라를 자동으로 켜기
+        } else {
+            fileUpload.style.display = "none";
+            cameraUpload.style.display = "none";
+        }
+    });
+
+    cameraFile.addEventListener("change", function() {
+        if (cameraFile.files.length > 0) {
+            const formData = new FormData(form);
+            formData.append("image", cameraFile.files[0]);
+            statusMessage.textContent = "Uploading...";
+            sendFormData(formData);
+        }
+    });
 
     form.addEventListener("submit", function(event) {
         event.preventDefault();
         statusMessage.textContent = "Uploading...";
 
         const formData = new FormData(form);
+        sendFormData(formData);
+    });
+
+    function sendFormData(formData) {
         fetch("/extract_url", {
             method: "POST",
             body: formData
@@ -65,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => {
             statusMessage.textContent = "An error occurred: " + error;
         });
-    });
+    }
 });
 </script>
 </body>
