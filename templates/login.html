@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                    <script>		
+                        alert('{{message}}')
+                    </script>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="card shadow" style="width: 100%; max-width: 400px;">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">로그인</h3>
+                <form action='/login' method="POST">
+                    <!-- 사용자 이름 -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">사용자 이메일</label>
+                        <input type="text" class="form-control" id="email" name="email" placeholder="사용자 이름을 입력하세요" required>
+                    </div>
+                    <!-- 비밀번호 -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">비밀번호</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                    <!-- 로그인 버튼 -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">로그인</button>
+                        <a href="/signup" class="btn btn-secondary">회원가입</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

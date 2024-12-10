@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <script> alert('{{message}}'); </script>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-12">
+                <h2 class="text-center mb-4">회원가입</h2>
+                <form method="POST">
+                    <!-- 이름 -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">이름</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="이름을 입력하세요" required>
+                    </div>
+                    <!-- 닉네임 -->
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">닉네임</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname" placeholder="닉네임을 입력하세요" required>
+                    </div>
+                    <!-- 이메일 -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">이메일</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="example@example.com" required>
+                    </div>
+                    <!-- 비밀번호 -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">비밀번호</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                    <!-- 비밀번호 확인 -->
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="비밀번호를 다시 입력하세요" required>
+                    </div>
+                    <!-- 제출 버튼 -->
+                    <button type="submit" class="btn btn-primary w-100">회원가입</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
