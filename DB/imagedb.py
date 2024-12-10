@@ -66,7 +66,7 @@ class imageDAO:
             DBConnect.get_db().close()
         return ret
     
-    # 가게 ID 불러오기
+    # 이미지 ID 불러오기
     def get_image_by_id(store_id):
         cursor = DBConnect.get_db().cursor()
         sql_select = 'SELECT * FROM files WHERE file_id = %s'
@@ -84,6 +84,24 @@ class imageDAO:
             }
         return None  # 가게가 없으면 None 반환
     
+    def get_file_by_id(self, file_id):
+        cursor = DBConnect.get_db().cursor()
+        sql_select = 'SELECT * FROM files WHERE file_id = %s'
+        cursor.execute(sql_select, (file_id,))
+        row = cursor.fetchone()
+        DBConnect.get_db().close()
+        if row:
+            return {
+                'file_id': row[0],
+                'userid': row[1],
+                'file_name': row[2],
+                'qr_info': row[3],
+                'update_at': row[4],
+                'image_path': row[5],
+                'video_path': row[6]
+        }
+        return None  # 파일이 없으면 None 반환
+    
     # insert
     def insert_file(self, userid, title, qr_info, upload_at, image_path, video_path):
         cursor = DBConnect.get_db().cursor()
@@ -91,6 +109,17 @@ class imageDAO:
         ret_cnt = cursor.execute(sql_insert, ( userid, title, qr_info, upload_at, image_path, video_path))
         DBConnect.get_db().close()
         return f'insert OK : {ret_cnt}'
+    
+    def delete_file(self, file_id):
+        query = "DELETE FROM files WHERE file_id = %s"
+        params = (file_id,)
+        db = DBConnect.get_db()
+        cursor = db.cursor()
+        cursor.execute(query, params)
+        db.commit()
+        cursor.close()
+        db.close()
+
     
     # # update
     # def update_store(store_id, name, address, image, rate, food_type):

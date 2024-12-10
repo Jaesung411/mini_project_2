@@ -137,4 +137,43 @@ def add_image():
         print(e)
         flash("업로드 실패")
         return redirect(url_for('gallery.gallery_list'))
+    
+@gallery_bp.route('/delete_image/<int:image_id>', methods=['POST'])
+def delete_image(image_id):
+    try:
+        # DB에서 이미지 경로 가져오기
+        image = imageDAO().get_file_by_id(image_id)
+        if not image:
+            flash("사진을 찾을 수 없습니다.")
+            return redirect(url_for('gallery.gallery_list'))
+
+        image_path = image['image_path']
+        video_path = image['video_path']
+
+        # S3에서 이미지 파일 삭제
+        image_key = image_path.replace(f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/", "")
+        print(f"Deleting image from S3 with Key: {image_key}")
+        s3.delete_object(
+            Bucket=S3_BUCKET,
+            Key=image_key
+        )
+
+        # S3에서 비디오 파일 삭제
+        video_key = video_path.replace(f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/", "")
+        print(f"Deleting video from S3 with Key: {video_key}")
+        s3.delete_object(
+            Bucket=S3_BUCKET,
+            Key=video_key
+        )
+
+        # DB에서 이미지 정보 삭제
+        imageDAO().delete_file(image_id)
+
+        flash("사진과 동영상이 성공적으로 삭제되었습니다.")
+        return redirect(url_for('gallery.gallery_list'))
+
+    except Exception as e:
+        print(f"Error: {e}")  # 에러 메시지 출력
+        flash("삭제 실패")
+        return redirect(url_for('gallery.gallery_list'))
 
